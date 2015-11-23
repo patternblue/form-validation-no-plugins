@@ -1,0 +1,50 @@
+<html>
+<head>
+	<title>The Odin Project: Validating a Form without Plugins</title>
+	<link rel="stylesheet" type="text/css" href="css/style.css"/>
+	// <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+
+  	<!-- // <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script> -->
+	<script type="text/javascript" src="form-validation-no-plugins.js"></script>
+</head>
+<body>
+	<form id="myForm">
+		<fieldset>
+			<legend>Please provide your information in order to sign up</legend>
+			<p>
+				<label for="email">Your Email</label>
+				<input type="text" id="email" validation="required email"/>
+			</p>
+			<p>
+				<label for="emailConfirmation">Email Confirmation</label>
+				<input type="text" id="emailConfirmation" validation="required emailConfirmation"/>
+			</p>
+			<p>
+				<label for="country">Country</label>
+				<select id="country" value="" validation="required country">
+					<option value="0">United States of America</option>
+					<option value="1">Canada</option>
+					<option value="2">Mexico</option>
+				</select>
+			</p>
+			<p>
+				<label for="zipCode">Zip Code</label>
+				<input type="text" id="zipCode" validation="required zipCode"/>
+			</p>
+			<p>
+				<label for="password">Password</label>
+				<input type="password" id="password" validation="required password"/>
+			</p>
+			<p>
+				<label for="passwordConfirmation">Password Confirmation</label>
+				<input type="password" id="passwordConfirmation" validation="required passwordConfirmation"/>
+			</p>
+			<p>
+				<!-- <label>Submit</label> -->
+				<input type="submit" validation="required submit"/>
+				<div id="submitError">Please fill in all fields.</div>
+			</p>
+		</fieldset>
+	</form>
+</body>
+</html>
