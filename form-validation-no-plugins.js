@@ -1,46 +1,14 @@
+// The Odin Project: Form Validation in jQuery (without using plugins)
+// mostly following the tutorial on The Odin Project assignment
 
-// module pattern here
+// The module pattern 
 // an Immediately-invoked anonymous function
 // executed with jQuery as argument, so I can extend the jQuery prototype with my plugin
 (function($){
 
 	// validation rules constructor 
 	function ValidationRules(){
-		// Private objects
-		var _rules = {  
-			email : { 
-				check: function(value) {
-					if(value) { 
-						// there must be at least 1 character (JohnDoe), 
-						// followed by a @ (JohnDoe@), 
-						// followed by at least 1 character (JohnDoe@gmail), 
-						// followed by a dot (\.) (JohnDoe@gmail.), 
-						// followed by at least 1 character (JohnDoe@gmail.com) 
-						var regExp = _getRegExp(".+@.+\..+");
-						return _testPattern(value, regExp); 
-					}
-					return true;
-				}, 
-				msg : "Enter a valid e-mail address." 
-			},
-			required : {
-				check: function(value) {
-					if(value) { 
-						return true; 
-					}else { 
-						return false; 
-					} 
-				}, 
-				msg : "This field is required." 
-			} 
-		} 
-		var _getRegExp = function(pattern){
-			return new RegExp("^"+pattern+"$","");
-		}
-		var _testPattern = function(value, regExp) { 
-			// var regExp = new RegExp("^"+pattern+"$",""); 
-			return regExp.test(value); 
-		} 
+		var _rules = {};
 
 		// public objects
 		return {  
@@ -50,8 +18,12 @@
 			getRule : function(name) { 
 				return _rules[name]; 
 			},
-			getRegExp: _getRegExp,
-			testPattern: _testPattern
+			getRegExp: function(pattern){
+				return new RegExp("^"+pattern+"$","");
+			},
+			testPattern: function(value, regExp){ 
+				return regExp.test(value); 
+			} 
 		}
 	}
 
@@ -88,7 +60,6 @@
 		}
 	} 
 
-
 	function Field($field){
 		this.$field = $field;
 		this.valid = false;
@@ -113,7 +84,6 @@
 		validate: function(){
 			var fieldObj = this,
 				$field = fieldObj.$field,
-				// errorClass = 'errorList',
 				$errorList = $(document.createElement('ul')).addClass('errorList'),
 				// get all validation attributes (rule names) from the field
 				ruleTypes = $field.attr("validation").split(" "),
@@ -157,6 +127,34 @@
 	// make my validationRules object and add rules to it
 
 	$.validationRules = new ValidationRules();
+
+	// email rule
+	$.validationRules.addRule('email', { 
+		check: function(value) {
+			if(value) { 
+				// there must be at least 1 character (JohnDoe), 
+				// followed by a @ (JohnDoe@), 
+				// followed by at least 1 character (JohnDoe@gmail), 
+				// followed by a dot (\.) (JohnDoe@gmail.), 
+				// followed by at least 1 character (JohnDoe@gmail.com) 
+				var regExp = $.validationRules.getRegExp(".+@.+\..+");
+				return $.validationRules.testPattern(value, regExp); 
+			}
+			return true;
+		}, 
+		msg : "Enter a valid e-mail address." 
+	});
+	// required rule
+	$.validationRules.addRule('required', {
+		check: function(value) {
+			if(value) { 
+				return true; 
+			}else { 
+				return false; 
+			} 
+		}, 
+		msg : "This field is required." 
+	}); 
 	// zipCode rule
 	$.validationRules.addRule('zipCode',{
 		check: function(value){
@@ -179,40 +177,47 @@
 		},
 		msg: "Provide a valid password (6-32 characters long)"
 	});
-	// equalTo rule
-	// need to work on this, it's wrong
+	// password confirmation
 	$.validationRules.addRule('passwordConfirmation',{
 		check: function(value){
 			if(value){
-				// var regExp = $.validation.getRegExp('.{6,32}');
-				return $.validationRules.getRule('password').check(value);
-				// return testPattern(value, '\d{5}');
+				var pass = $('[id=password]').val();
+				return value === pass;
 			}
 			return true;
 		},
 		msg: "Please confirm your password"
 	});	
-
+	// email confirmation
+	$.validationRules.addRule('emailConfirmation',{
+		check: function(value){
+			if(value){
+				var email = $('[id=email]').val();
+				return value === email;
+			}
+			return true;
+		},
+		msg: "Please confirm your email"
+	});	
+	
 	// extend this object to jQuery prototype so any jQuery object shares these methods
 	var validationExtension = {
 		validation: function(){
 			// this = any jQuery object
-			var validatorForm = new Form($(this));
-			$(this).bind("submit", function(event) {
+			var validatorForm = new Form(this);
+			this.bind("submit", function(event) {
 				validatorForm.validate();
 				if(!validatorForm.isValid()){
+					// prevent the page from refreshing/submitting if there are any errors
 					event.preventDefault();
 				} 
 			});
-
-			$(this).validate = function(){
-			// var validatorForm = $.data($(this)[0], 'validatorForm');
+			// validate all fields in the form, return isValid or not
+			this.validate = function(){
 				validatorForm.validate();
 				return validatorForm.isValid(); 
 			}
 		}
-		// validate : function() {
-		// }
 	}
 	$.extend(true, $.fn, validationExtension);
 
@@ -222,8 +227,17 @@
 // run the plugin on my form when the DOM is ready
 $(document).ready(function(){
 	var $myForm = $('#myForm');
-
 	$myForm.validation();
+
+	// display submit error if any field has errors
+	$('#submit').click(function(){
+		if(!$myForm.validate()){
+			$('#submitError').show();
+		}else{
+			$('#submitError').hide();
+		}
+
+	});
 });
 
 
